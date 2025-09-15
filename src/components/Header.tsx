@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { Menu } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -80,6 +80,7 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-1/2 sm:w-1/4">
+            <SheetTitle className="hidden">Menu</SheetTitle>
               <div className="flex flex-col items-center justify-center mt-8">
                 {navItens.map((item) => (
                   <Link
