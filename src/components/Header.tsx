@@ -80,7 +80,7 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-1/2 sm:w-1/4">
-            <SheetTitle className="hidden">Menu</SheetTitle>
+              <SheetTitle className="hidden">Menu</SheetTitle>
               <div className="flex flex-col items-center justify-center mt-8">
                 {navItens.map((item) => (
                   <Link
