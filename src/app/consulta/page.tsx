@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -7,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface OpcaoFipe {
   nome: string;
@@ -45,21 +46,34 @@ export default function paginaConsulta() {
   const [infoVeiculo, setInfoVeiculo] = useState<InfoVeiculo | null>(null);
   const [historico, setHistorico] = useState<InfoVeiculo[]>([]);
 
+  const isMounted = useRef(false);
 
-  useEffect(() => {
-    if (infoVeiculo) {
-      setHistorico((prev) => {
-        const novo = [infoVeiculo, ...prev];
+useEffect(() => {
+  const saved = localStorage.getItem("historicoFipe");
+  if (saved) {
+    const parsed: InfoVeiculo[] = JSON.parse(saved);
+    setHistorico(parsed);
+  }
+  isMounted.current = true;
+}, []);
 
-        // Limita a 10 itens
-        return novo.slice(0, 10);
-      });
-    }
-  }, [infoVeiculo]);
+  // Logica para manter o historico e salvar ele no LocalStorage
+  const adicionaHistorico = (novoVeiculo: InfoVeiculo) => {
+    setHistorico((prev) => {
+      // Evita duplicatas consecutivas
+      if (prev[0]?.CodigoFipe === novoVeiculo.CodigoFipe) return prev;
+
+      const novo = [novoVeiculo, ...prev].slice(0, 10);
+      localStorage.setItem("historicoFipe", JSON.stringify(novo));
+      return novo;
+    });
+  };
 
   // FUNÇÕES DE REQUISIÇÃO:
   // Definindo o tipo de veiculo:
-  const handleTipoChange = async (value: string) => {
+  const handleTipoChange = async (
+    value: "carros" | "motos" | "caminhoes" | ""
+  ) => {
     setTipo(value);
     setMarca("");
     setModelo("");
@@ -119,6 +133,7 @@ export default function paginaConsulta() {
 
       const data: InfoVeiculo = await res.json();
       setInfoVeiculo(data);
+      adicionaHistorico(data);
     } catch (error) {
       console.error("Erro na requisição:", error);
     }
@@ -222,9 +237,27 @@ export default function paginaConsulta() {
       </div>
 
       <div className="w-full max-w-4xl mx-auto mt-6">
-        <h2 className="text-lg font-semibold mb-4 md:ml-4 text-center md:text-left">
-          Histórico de Pesquisas
-        </h2>
+        {/* Titulo e Botao que so aparece quando tem um historico */}
+        <div className="flex items-center justify-between mb-4 m-4">
+          <h2 className="text-lg font-semibold md:ml-4 text-center md:text-left">
+            Histórico de Pesquisas
+          </h2>
+
+          {historico.length > 0 && (
+            <Button
+              onClick={() => {
+                localStorage.removeItem("historicoFipe");
+                setHistorico([]);
+                setInfoVeiculo(null);
+              }}
+              className="ml-4 p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
+            >
+              Limpar Histórico
+            </Button>
+          )}
+        </div>
+
+        {/* Logica do historico na tela */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {historico.map((item, index) => (
             <div

@@ -62,7 +62,6 @@ export function Header() {
               href={item.href}
               className={cn(
                 "px-3 py-2 rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                // condicional para página ativa se quiser
                 item.href === "/" ? "text-primary" : "text-foreground"
               )}
             >
