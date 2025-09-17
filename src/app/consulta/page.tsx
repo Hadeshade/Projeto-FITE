@@ -60,7 +60,6 @@ useEffect(() => {
   // Logica para manter o historico e salvar ele no LocalStorage
   const adicionaHistorico = (novoVeiculo: InfoVeiculo) => {
     setHistorico((prev) => {
-      // Evita duplicatas consecutivas
       if (prev[0]?.CodigoFipe === novoVeiculo.CodigoFipe) return prev;
 
       const novo = [novoVeiculo, ...prev].slice(0, 10);

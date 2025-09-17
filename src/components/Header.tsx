@@ -49,8 +49,7 @@ export function Header() {
           </div>
 
           <span className="text-lg sm:text-xl md:text-2x1 font-bold">
-            {" "}
-            NomeSite
+            Fipe Guerra
           </span>
         </Link>
 
