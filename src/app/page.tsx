@@ -37,7 +37,7 @@ export interface ResultadoSimulacao {
 }
 
 export default function Home() {
-  const [erroApi, setErroApi]= useState<string | null> (null);
+  const [erroApi, setErroApi] = useState<string | null>(null);
   // Para a logica dos Veiculos:
   const [veiculos, setVeiculos] = useState<InfoVeiculo[]>([]);
   const [histVeiculos, setHistVeiculos] = useState<InfoVeiculo[]>([]);
@@ -52,16 +52,18 @@ export default function Home() {
   // Logica de aparecer carros mais vendidos
   // com tratamento de erro de requisicao de API
   let conteudo;
-  if(veiculos.length === 0){
-    if(erroApi){
-      conteudo = <div> {erroApi}</div>
+  if (veiculos.length === 0) {
+    if (erroApi) {
+      conteudo = <div> {erroApi}</div>;
     } else {
-      conteudo = (<div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-              </div>)
+      conteudo = (
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+          <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+          <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+          <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+        </div>
+      );
     }
   } else {
     conteudo = veiculos.map((carro, index) => (
@@ -85,7 +87,6 @@ export default function Home() {
       </div>
     ));
   }
- 
 
   // Lógica de pegar os dados no LocalStorage
   useEffect(() => {
@@ -127,7 +128,9 @@ export default function Home() {
         setVeiculos(resultados);
       } catch (error: any) {
         console.error("Erro ao buscar preços", error.message);
-        setErroApi("Limite de consultas diária foi atingido, tente novamente mais tarde.")
+        setErroApi(
+          "Limite de consultas diária foi atingido, tente novamente outro dia."
+        );
       }
     };
 
@@ -313,12 +316,19 @@ export default function Home() {
 
       {/* Onde estão os gráficos */}
       {resultados.length >= 2 && (
-        <div className="col-span-1 md:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <GraficoVeiculo
-            tipo="valor total"
-            veiculos={selecionados.map((s) => ({
-              nome: s.Modelo,
-              valor: s.Valor,
+            tipo="Valor Total"
+            veiculos={resultados.map((s) => ({
+              nome: s.carro,
+              valor: s.totalPago,
+            }))}
+          />
+          <GraficoVeiculo
+            tipo="Parcela"
+            veiculos={resultados.map((s) => ({
+              nome: s.carro,
+              valor: s.parcela,
             }))}
           />
         </div>

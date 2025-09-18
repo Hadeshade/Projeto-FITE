@@ -38,7 +38,7 @@ export default function paginaConsulta() {
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
   const [ano, setAno] = useState("");
-  const [loading,setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Arrays preenchidos com as respostas da API:
   const [marcas, setMarcas] = useState<OpcaoFipe[]>([]);
@@ -46,6 +46,8 @@ export default function paginaConsulta() {
   const [anos, setAnos] = useState<OpcaoFipe[]>([]);
   const [infoVeiculo, setInfoVeiculo] = useState<InfoVeiculo | null>(null);
   const [historico, setHistorico] = useState<InfoVeiculo[]>([]);
+
+  const [erroApi, setErroApi] = useState<string>("");
 
   const isMounted = useRef(false);
 
@@ -61,7 +63,7 @@ export default function paginaConsulta() {
   // Logica para manter o historico e salvar ele no LocalStorage
   const adicionaHistorico = (novoVeiculo: InfoVeiculo) => {
     setHistorico((prev) => {
-      if (prev[0]?.CodigoFipe === novoVeiculo.CodigoFipe){
+      if (prev[0]?.CodigoFipe === novoVeiculo.CodigoFipe) {
         return prev;
       }
 
@@ -84,24 +86,26 @@ export default function paginaConsulta() {
     setAnos([]);
     setInfoVeiculo(null);
 
-    console.log("OI")
+    console.log("OI");
     try {
       setLoading(true);
-      
-       const res = await fetch(
-         `https://parallelum.com.br/fipe/api/v1/${value}/marcas`
-       );
-       
 
-       if (!res.ok) {
-         const errorData = await res.json();
-         throw new Error(errorData.error || "Erro na API FIPE");
-       }
+      const res = await fetch(
+        `https://parallelum.com.br/fipe/api/v1/${value}/marcas`
+      );
 
-       const data = await res.json();
-       setMarcas(data);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Erro na API FIPE");
+      }
+
+      const data = await res.json();
+      setMarcas(data);
     } catch (error) {
-      toast.error("Erro na requisição")
+      toast.error("Erro na requisição");
+      setErroApi(
+        "Limite de consultas diária foi atingido, tente novamente outro dia."
+      );
     } finally {
       setLoading(false);
     }
@@ -127,7 +131,6 @@ export default function paginaConsulta() {
     } finally {
       setLoading(false);
     }
-    
   };
 
   // Definindo o modelo do veiculo escolhido:
@@ -148,7 +151,6 @@ export default function paginaConsulta() {
     } finally {
       setLoading(false);
     }
-    
   };
 
   const fetchInfoVeiculo = async (
@@ -190,7 +192,10 @@ export default function paginaConsulta() {
           {/*Tipo de Veiculo */}
           <Select onValueChange={handleTipoChange}>
             <SelectTrigger>
-              <SelectValue className="mb-4 w-full" placeholder={"Selecione o tipo"} />
+              <SelectValue
+                className="mb-4 w-full"
+                placeholder={"Selecione o tipo"}
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="carros">Carros</SelectItem>
@@ -202,7 +207,7 @@ export default function paginaConsulta() {
           {/*Marca do veiculo selecionada */}
           <Select
             onValueChange={handleMarcaChange}
-            disabled={!tipo}
+            disabled={!tipo || !!erroApi}
             value={marca}
           >
             <SelectTrigger>
@@ -213,11 +218,12 @@ export default function paginaConsulta() {
               />
             </SelectTrigger>
             <SelectContent>
-              {marcas && marcas.map((m) => (
-                <SelectItem key={m.codigo} value={m.codigo}>
-                  {m.nome}
-                </SelectItem>
-              ))}
+              {marcas &&
+                marcas.map((m) => (
+                  <SelectItem key={m.codigo} value={m.codigo}>
+                    {m.nome}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
 
@@ -290,6 +296,8 @@ export default function paginaConsulta() {
                 Referência: {infoVeiculo.MesReferencia}
               </p>
             </div>
+          ) : erroApi ? (
+            <p className="text-gray-400 italic text-center">{erroApi}</p>
           ) : (
             <p className="text-gray-400 italic text-center">
               Nenhum veículo selecionado ainda.

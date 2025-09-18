@@ -18,11 +18,11 @@ const colors = [
 
 export interface Veiculo {
   nome: string;
-  valor: string;
+  valor: number;
 };
 
 export interface GraficoVeiculoProps {
-  tipo: 'valor total' | 'juros', 
+  tipo: 'Valor Total' | 'Parcela', 
   veiculos: Veiculo[],
   style?: React.CSSProperties
 }
@@ -30,7 +30,7 @@ export interface GraficoVeiculoProps {
 interface VeiculoConfig {
   chave: string;
   legenda: string;
-  valor: string;
+  valor: number;
 }
 
 export default function GraficoVeiculo({ veiculos, style, tipo }: GraficoVeiculoProps) {
@@ -67,7 +67,6 @@ export default function GraficoVeiculo({ veiculos, style, tipo }: GraficoVeiculo
     return [data];
   }, [veiculosConfig]);
 
-  console.log(veiculosConfig,chartConfig, chartData)
   return (
     <div style={style}>
       <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
@@ -80,6 +79,7 @@ export default function GraficoVeiculo({ veiculos, style, tipo }: GraficoVeiculo
           />
           <ChartTooltip content={
             <ChartTooltipContent
+              formatter={(value, name, item) => <Indicator label={chartConfig[name].label as string} value={value as number} color={item.color as string} />}
             />
           }/>
           <CartesianGrid vertical={false} />
@@ -90,3 +90,30 @@ export default function GraficoVeiculo({ veiculos, style, tipo }: GraficoVeiculo
   )
 }
 
+function Indicator({ label, value, color }: { label: string, value: number; color: string }) {
+  return (
+    <>
+      <div
+        className="shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg) h-2.5 w-2.5"
+        style={
+          {
+            "--color-bg": color,
+            "--color-border": color,
+          } as React.CSSProperties
+        }
+      />
+      <div
+        className="flex flex-1 justify-between leading-none items-center"
+      >
+        <div className="grid gap-1.5">
+          <span className="text-muted-foreground">
+            {label}
+          </span>
+        </div>
+        <span className="text-foreground font-mono font-medium tabular-nums">
+          {value.toLocaleString("pt-BR", {currency: "BRL", style: "currency"})}
+        </span>
+      </div>
+    </>
+  )
+}
