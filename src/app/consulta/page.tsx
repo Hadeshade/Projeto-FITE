@@ -84,11 +84,20 @@ export default function paginaConsulta() {
     setAnos([]);
     setInfoVeiculo(null);
 
+    console.log("OI")
     try {
       setLoading(true);
+      
        const res = await fetch(
          `https://parallelum.com.br/fipe/api/v1/${value}/marcas`
        );
+       
+
+       if (!res.ok) {
+         const errorData = await res.json();
+         throw new Error(errorData.error || "Erro na API FIPE");
+       }
+
        const data = await res.json();
        setMarcas(data);
     } catch (error) {
@@ -175,13 +184,13 @@ export default function paginaConsulta() {
     <div className="flex flex-col min-h-screen">
       <div className="w-full max-w-4xl mx-auto mt-6 p-6 rounded-2xl shadow-lg bg-white border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <h1>Consulte o veículo abaixo:</h1>
+          <h1 className="text-lg font-semibold mb-4">
+            Consulte o veículo abaixo:
+          </h1>
           {/*Tipo de Veiculo */}
           <Select onValueChange={handleTipoChange}>
             <SelectTrigger>
-              <SelectValue
-                placeholder={"Selecione o tipo"}
-              />
+              <SelectValue className="mb-4 w-full" placeholder={"Selecione o tipo"} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="carros">Carros</SelectItem>
@@ -191,14 +200,20 @@ export default function paginaConsulta() {
           </Select>
 
           {/*Marca do veiculo selecionada */}
-          <Select onValueChange={handleMarcaChange} disabled={!tipo} value={marca}>
+          <Select
+            onValueChange={handleMarcaChange}
+            disabled={!tipo}
+            value={marca}
+          >
             <SelectTrigger>
               <SelectValue
-                placeholder={loading && tipo ? "Carregando..." : "Selecione a marca"}
+                placeholder={
+                  loading && tipo ? "Carregando..." : "Selecione a marca"
+                }
               />
             </SelectTrigger>
             <SelectContent>
-              {marcas.map((m) => (
+              {marcas && marcas.map((m) => (
                 <SelectItem key={m.codigo} value={m.codigo}>
                   {m.nome}
                 </SelectItem>
@@ -207,26 +222,40 @@ export default function paginaConsulta() {
           </Select>
 
           {/*Selecionar o modelo da marca selecionada*/}
-          <Select onValueChange={handleModeloChange} disabled={!marca || marcas.length === 0} value={modelo}>
+          <Select
+            onValueChange={handleModeloChange}
+            disabled={!marca || marcas.length === 0}
+            value={modelo}
+          >
             <SelectTrigger>
               <SelectValue
-                placeholder={loading  && marca ? "Carregando..." : "Selecione o modelo"}
+                placeholder={
+                  loading && marca ? "Carregando..." : "Selecione o modelo"
+                }
               />
             </SelectTrigger>
             <SelectContent>
-              {modelos.length === 0 ? "Selecione o modelo" : modelos.map((m) => (
-                <SelectItem key={m.codigo} value={m.codigo}>
-                  {m.nome}
-                </SelectItem>
-              ))}
+              {modelos.length === 0
+                ? "Selecione o modelo"
+                : modelos.map((m) => (
+                    <SelectItem key={m.codigo} value={m.codigo}>
+                      {m.nome}
+                    </SelectItem>
+                  ))}
             </SelectContent>
           </Select>
 
           {/*Selecionar o Ano do modelo escolhido */}
-          <Select onValueChange={handleVeiculoChange} disabled={!modelo || modelos.length === 0} value={ano}>
+          <Select
+            onValueChange={handleVeiculoChange}
+            disabled={!modelo || modelos.length === 0}
+            value={ano}
+          >
             <SelectTrigger>
               <SelectValue
-                placeholder={loading && modelo ? "Carregando..." : "Selecione o ano"}
+                placeholder={
+                  loading && modelo ? "Carregando..." : "Selecione o ano"
+                }
               />
             </SelectTrigger>
             <SelectContent>

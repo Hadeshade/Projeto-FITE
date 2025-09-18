@@ -6,6 +6,7 @@ import carrosMaisVendidos from "@/data/carrosMaisVendidos.json";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import GraficoVeiculo from "@/components/GraficoVeiculo";
 
 export interface InfoVeiculo {
   TipoVeiculo: number;
@@ -36,6 +37,7 @@ export interface ResultadoSimulacao {
 }
 
 export default function Home() {
+  const [erroApi, setErroApi]= useState<string | null> (null);
   // Para a logica dos Veiculos:
   const [veiculos, setVeiculos] = useState<InfoVeiculo[]>([]);
   const [histVeiculos, setHistVeiculos] = useState<InfoVeiculo[]>([]);
@@ -46,6 +48,44 @@ export default function Home() {
   const [prazo, setPrazo] = useState(12);
   const [selecionados, setSelecionados] = useState<InfoVeiculo[]>([]);
   const [resultados, setResultados] = useState<ResultadoSimulacao[]>([]);
+
+  // Logica de aparecer carros mais vendidos
+  // com tratamento de erro de requisicao de API
+  let conteudo;
+  if(veiculos.length === 0){
+    if(erroApi){
+      conteudo = <div> {erroApi}</div>
+    } else {
+      conteudo = (<div className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+              </div>)
+    }
+  } else {
+    conteudo = veiculos.map((carro, index) => (
+      <div
+        key={index}
+        onClick={() =>
+          setSelecionados((prev) =>
+            prev.includes(carro)
+              ? prev.filter((c) => c !== carro)
+              : [...prev, carro].slice(0, 10)
+          )
+        }
+        className={`flex flex-col justify-center p-4 border rounded-lg shadow-sm bg-white hover:shadow-md transition cursor-pointer items-center ${
+          selecionados.includes(carro) ? "ring-2 ring-blue-500" : ""
+        }`}
+      >
+        <h4 className="font-medium text-gray-800">
+          {carro.Marca} {carro.Modelo}
+        </h4>
+        <p className="text-sm text-gray-600">Preço Médio: {carro.Valor}</p>
+      </div>
+    ));
+  }
+ 
 
   // Lógica de pegar os dados no LocalStorage
   useEffect(() => {
@@ -74,14 +114,20 @@ export default function Home() {
             const res = await fetch(
               `https://parallelum.com.br/fipe/api/v1/${carro.tipo}/marcas/${carro.marca}/modelos/${carro.modelo}/anos/${carro.ano}`
             );
+
+            if (!res.ok) {
+              const errorData = await res.json();
+              throw new Error(errorData.error || "Erro na API FIPE");
+            }
+
             const data = await res.json();
             return data;
           })
         );
-        console.log(resultados);
         setVeiculos(resultados);
-      } catch (error) {
-        console.error("Erro ao buscar preços", error);
+      } catch (error: any) {
+        console.error("Erro ao buscar preços", error.message);
+        setErroApi("Limite de consultas diária foi atingido, tente novamente mais tarde.")
       }
     };
 
@@ -180,7 +226,7 @@ export default function Home() {
               {resultados.map((res, i) => (
                 <div
                   key={i}
-                  className="p-4 border rounded-lg shadow bg-gray-100 w-full max-w-sm"
+                  className="text-center p-4 border rounded-lg shadow bg-gray-100 w-full max-w-xs"
                 >
                   <h4 className="font-medium">{res.carro}</h4>
                   <p>
@@ -211,13 +257,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Div condicional */}
-      {resultados.length >= 2 && (
-        <div className="col-span-1 md:col-span-2">
-          <p>GRAFICOS</p>
-        </div>
-      )}
-
       {/* Lógica de colocar os carros mais vendidos e o Historico de Veiculos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/*Historico de Carros */}
@@ -237,7 +276,7 @@ export default function Home() {
                     setSelecionados((prev) =>
                       prev.includes(carro)
                         ? prev.filter((c) => c !== carro)
-                        : [...prev, carro]
+                        : [...prev, carro].slice(0, 10)
                     )
                   }
                   className={`flex flex-col justify-center p-4 border rounded-lg shadow-sm bg-white hover:shadow-md transition cursor-pointer items-center ${
@@ -259,42 +298,31 @@ export default function Home() {
         {/*Carros mais vendidos */}
         <div className="p-4 border rounded-lg shadow-sm bg-white">
           <h2 className="text-lg font-semibold mb-4">Carros mais Vendidos</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div
+            className={` gap-4 ${
+              erroApi
+                ? "grid-cols-1 text-center items-center"
+                : "grid grid-cols-2"
+            }`}
+          >
             {/* Carros mais vendidos */}
-            {veiculos.length === 0 ? (
-              <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-                <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-              </div>
-            ) : (
-              veiculos.map((carro, index) => (
-                <div
-                  key={index}
-                  onClick={() =>
-                    setSelecionados((prev) =>
-                      prev.includes(carro)
-                        ? prev.filter((c) => c !== carro)
-                        : [...prev, carro]
-                    )
-                  }
-                  className={`flex flex-col justify-center p-4 border rounded-lg shadow-sm bg-white hover:shadow-md transition cursor-pointer items-center ${
-                    selecionados.includes(carro) ? "ring-2 ring-blue-500" : ""
-                  }`}
-                >
-                  <h4 className="font-medium text-gray-800">
-                    {carro.Marca} {carro.Modelo}
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Preço Médio: {carro.Valor}
-                  </p>
-                </div>
-              ))
-            )}
+            {conteudo}
           </div>
         </div>
       </div>
+
+      {/* Onde estão os gráficos */}
+      {resultados.length >= 2 && (
+        <div className="col-span-1 md:col-span-2">
+          <GraficoVeiculo
+            tipo="valor total"
+            veiculos={selecionados.map((s) => ({
+              nome: s.Modelo,
+              valor: s.Valor,
+            }))}
+          />
+        </div>
+      )}
     </div>
   );
 }
