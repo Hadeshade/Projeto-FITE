@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 export interface OpcaoFipe {
   nome: string;
@@ -32,12 +33,12 @@ export interface RespostaModeloFipe {
   anos: OpcaoFipe[];
 }
 
-
 export default function paginaConsulta() {
   const [tipo, setTipo] = useState<"carros" | "motos" | "caminhoes" | "">("");
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
   const [ano, setAno] = useState("");
+  const [loading,setLoading] = useState(false);
 
   // Arrays preenchidos com as respostas da API:
   const [marcas, setMarcas] = useState<OpcaoFipe[]>([]);
@@ -48,19 +49,21 @@ export default function paginaConsulta() {
 
   const isMounted = useRef(false);
 
-useEffect(() => {
-  const saved = localStorage.getItem("historicoFipe");
-  if (saved) {
-    const parsed: InfoVeiculo[] = JSON.parse(saved);
-    setHistorico(parsed);
-  }
-  isMounted.current = true;
-}, []);
+  useEffect(() => {
+    const saved = localStorage.getItem("historicoFipe");
+    if (saved) {
+      const parsed: InfoVeiculo[] = JSON.parse(saved);
+      setHistorico(parsed);
+    }
+    isMounted.current = true;
+  }, []);
 
   // Logica para manter o historico e salvar ele no LocalStorage
   const adicionaHistorico = (novoVeiculo: InfoVeiculo) => {
     setHistorico((prev) => {
-      if (prev[0]?.CodigoFipe === novoVeiculo.CodigoFipe) return prev;
+      if (prev[0]?.CodigoFipe === novoVeiculo.CodigoFipe){
+        return prev;
+      }
 
       const novo = [novoVeiculo, ...prev].slice(0, 10);
       localStorage.setItem("historicoFipe", JSON.stringify(novo));
@@ -81,11 +84,18 @@ useEffect(() => {
     setAnos([]);
     setInfoVeiculo(null);
 
-    const res = await fetch(
-      `https://parallelum.com.br/fipe/api/v1/${value}/marcas`
-    );
-    const data = await res.json();
-    setMarcas(data);
+    try {
+      setLoading(true);
+       const res = await fetch(
+         `https://parallelum.com.br/fipe/api/v1/${value}/marcas`
+       );
+       const data = await res.json();
+       setMarcas(data);
+    } catch (error) {
+      toast.error("Erro na requisição")
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Definindo a marca do veiculo escolhido:
@@ -96,11 +106,19 @@ useEffect(() => {
     setAnos([]);
     setInfoVeiculo(null);
 
-    const res = await fetch(
-      `https://parallelum.com.br/fipe/api/v1/${tipo}/marcas/${value}/modelos`
-    );
-    const data = await res.json();
-    setModelos(data.modelos);
+    try {
+      setLoading(true);
+      const res = await fetch(
+        `https://parallelum.com.br/fipe/api/v1/${tipo}/marcas/${value}/modelos`
+      );
+      const data = await res.json();
+      setModelos(data.modelos);
+    } catch (error) {
+      toast.error("Erro na requisição");
+    } finally {
+      setLoading(false);
+    }
+    
   };
 
   // Definindo o modelo do veiculo escolhido:
@@ -108,11 +126,20 @@ useEffect(() => {
     setModelo(value);
     setAno("");
     setInfoVeiculo(null);
-    const res = await fetch(
-      `https://parallelum.com.br/fipe/api/v1/${tipo}/marcas/${marca}/modelos/${value}/anos`
-    );
-    const data = await res.json();
-    setAnos(data);
+
+    try {
+      setLoading(true);
+      const res = await fetch(
+        `https://parallelum.com.br/fipe/api/v1/${tipo}/marcas/${marca}/modelos/${value}/anos`
+      );
+      const data = await res.json();
+      setAnos(data);
+    } catch (error) {
+      toast.error("Erro na requisição");
+    } finally {
+      setLoading(false);
+    }
+    
   };
 
   const fetchInfoVeiculo = async (
@@ -144,16 +171,17 @@ useEffect(() => {
     fetchInfoVeiculo(tipo, marca, modelo, ano);
   };
 
-
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <div className="w-full max-w-4xl mx-auto mt-6 p-6 rounded-2xl shadow-lg bg-white border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <h1>Consulte o veículo abaixo:</h1>
           {/*Tipo de Veiculo */}
           <Select onValueChange={handleTipoChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione o tipo de veículo" />
+              <SelectValue
+                placeholder={"Selecione o tipo"}
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="carros">Carros</SelectItem>
@@ -163,9 +191,11 @@ useEffect(() => {
           </Select>
 
           {/*Marca do veiculo selecionada */}
-          <Select onValueChange={handleMarcaChange} disabled={!tipo}>
+          <Select onValueChange={handleMarcaChange} disabled={!tipo} value={marca}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione a marca" />
+              <SelectValue
+                placeholder={loading && tipo ? "Carregando..." : "Selecione a marca"}
+              />
             </SelectTrigger>
             <SelectContent>
               {marcas.map((m) => (
@@ -177,12 +207,14 @@ useEffect(() => {
           </Select>
 
           {/*Selecionar o modelo da marca selecionada*/}
-          <Select onValueChange={handleModeloChange} disabled={!marca}>
+          <Select onValueChange={handleModeloChange} disabled={!marca || marcas.length === 0} value={modelo}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione o modelo" />
+              <SelectValue
+                placeholder={loading  && marca ? "Carregando..." : "Selecione o modelo"}
+              />
             </SelectTrigger>
             <SelectContent>
-              {modelos.map((m) => (
+              {modelos.length === 0 ? "Selecione o modelo" : modelos.map((m) => (
                 <SelectItem key={m.codigo} value={m.codigo}>
                   {m.nome}
                 </SelectItem>
@@ -191,9 +223,11 @@ useEffect(() => {
           </Select>
 
           {/*Selecionar o Ano do modelo escolhido */}
-          <Select onValueChange={handleVeiculoChange} disabled={!modelo}>
+          <Select onValueChange={handleVeiculoChange} disabled={!modelo || modelos.length === 0} value={ano}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione o ano" />
+              <SelectValue
+                placeholder={loading && modelo ? "Carregando..." : "Selecione o ano"}
+              />
             </SelectTrigger>
             <SelectContent>
               {anos.map((a) => (
@@ -272,6 +306,6 @@ useEffect(() => {
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 }

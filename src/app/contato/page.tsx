@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Description } from "@radix-ui/react-dialog"
 import { Label } from "@radix-ui/react-label"
 import { useState } from "react"
 import { toast } from "sonner"

@@ -1,0 +1,82 @@
+[
+  {
+    "tipo": "carros",
+    "marca": "23",
+    "modelo": "6232",
+    "ano": "2013-5",
+    "nome": "Chevrolet Onix 2013",
+    "valorMedio": ""
+  },
+  {
+    "tipo": "carros",
+    "marca": "22",
+    "modelo": "4789",
+    "ano": "2011-5",
+    "nome": "Ford Ka 2011",
+    "valorMedio": ""
+  },
+  {
+    "tipo": "carros",
+    "marca": "59",
+    "modelo": "5114",
+    "ano": "2011-5",
+    "nome": "Volkswagen Gol 2011",
+    "valorMedio": ""
+  },
+  {
+    "tipo": "carros",
+    "marca": "26",
+    "modelo": "6205",
+    "ano": "2016-5",
+    "nome": "Hyundai HB20 2016",
+    "valorMedio": ""
+  },
+  {
+    "tipo": "carros",
+    "marca": "21",
+    "modelo": "4825",
+    "ano": "2014-5",
+    "nome": "Fiat Palio 2014",
+    "valorMedio": ""
+  },
+  {
+    "tipo": "carros",
+    "marca": "26",
+    "modelo": "1345",
+    "ano": "2011-1",
+    "nome": "Hyundai Tucson 2011",
+    "valorMedio": ""
+  },
+  {
+    "tipo": "carros",
+    "marca": "22",
+    "modelo": "4135",
+    "ano": "2014-5",
+    "nome": "Ford Fiesta 2014",
+    "valorMedio": ""
+  },
+  {
+    "tipo": "carros",
+    "marca": "23",
+    "modelo": "4850",
+    "ano": "2010-5",
+    "nome": "Chevrolet Prisma 2016",
+    "valorMedio": ""
+  },
+  {
+    "tipo": "carros",
+    "marca": "59",
+    "modelo": "2372",
+    "ano": "2010-1",
+    "nome": "Volkswagen Fox 2010",
+    "valorMedio": ""
+  },
+  {
+    "tipo": "carros",
+    "marca": "21",
+    "modelo": "5243",
+    "ano": "2013-5",
+    "nome": "Fiat Uno 2014",
+    "valorMedio": ""
+  }
+]
