@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useHistorico } from "@/contexts/HistoricoContext";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -33,7 +34,7 @@ export interface RespostaModeloFipe {
   anos: OpcaoFipe[];
 }
 
-export default function paginaConsulta() {
+export default function PaginaConsulta() {
   const [tipo, setTipo] = useState<"carros" | "motos" | "caminhoes" | "">("");
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
@@ -45,33 +46,12 @@ export default function paginaConsulta() {
   const [modelos, setModelos] = useState<OpcaoFipe[]>([]);
   const [anos, setAnos] = useState<OpcaoFipe[]>([]);
   const [infoVeiculo, setInfoVeiculo] = useState<InfoVeiculo | null>(null);
-  const [historico, setHistorico] = useState<InfoVeiculo[]>([]);
 
+  const { historico, adicionarHistorico, limparHistorico } = useHistorico();
   const [erroApi, setErroApi] = useState<string>("");
 
   const isMounted = useRef(false);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("historicoFipe");
-    if (saved) {
-      const parsed: InfoVeiculo[] = JSON.parse(saved);
-      setHistorico(parsed);
-    }
-    isMounted.current = true;
-  }, []);
-
-  // Logica para manter o historico e salvar ele no LocalStorage
-  const adicionaHistorico = (novoVeiculo: InfoVeiculo) => {
-    setHistorico((prev) => {
-      if (prev[0]?.CodigoFipe === novoVeiculo.CodigoFipe) {
-        return prev;
-      }
-
-      const novo = [novoVeiculo, ...prev].slice(0, 10);
-      localStorage.setItem("historicoFipe", JSON.stringify(novo));
-      return novo;
-    });
-  };
 
   // FUNÇÕES DE REQUISIÇÃO:
   // Definindo o tipo de veiculo:
@@ -170,7 +150,7 @@ export default function paginaConsulta() {
 
       const data: InfoVeiculo = await res.json();
       setInfoVeiculo(data);
-      adicionaHistorico(data);
+      adicionarHistorico(data);
     } catch (error) {
       console.error("Erro na requisição:", error);
     }
@@ -315,11 +295,7 @@ export default function paginaConsulta() {
 
           {historico.length > 0 && (
             <Button
-              onClick={() => {
-                localStorage.removeItem("historicoFipe");
-                setHistorico([]);
-                setInfoVeiculo(null);
-              }}
+              onClick={limparHistorico}
               className="ml-4 p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
             >
               Limpar Histórico

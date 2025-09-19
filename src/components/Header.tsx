@@ -14,25 +14,25 @@ type NavItem = {
 };
 
 const navItens: NavItem[] = [
-  { label: "Home", href: "/" },
+  { label: "Principal", href: "/" },
   { label: "Consulta", href: "/consulta" },
   { label: "Contato", href: "/contato" },
 ];
 
 export function Header() {
-    const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-    //Logica para sheet automatico;
-    useEffect(() => {
-        const handleResize = () => {
-            if(window.innerWidth >= 768){
-                setOpen(false);
-            }
-        };
+  //Logica para sheet automatico;
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setOpen(false);
+      }
+    };
 
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background shadow-sm">

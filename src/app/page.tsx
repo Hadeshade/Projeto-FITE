@@ -1,12 +1,13 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import carrosMaisVendidos from "@/data/carrosMaisVendidos.json";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import GraficoVeiculo from "@/components/GraficoVeiculo";
+import { useHistorico } from "@/contexts/HistoricoContext";
 
 export interface InfoVeiculo {
   TipoVeiculo: number;
@@ -40,8 +41,8 @@ export default function Home() {
   const [erroApi, setErroApi] = useState<string | null>(null);
   // Para a logica dos Veiculos:
   const [veiculos, setVeiculos] = useState<InfoVeiculo[]>([]);
-  const [histVeiculos, setHistVeiculos] = useState<InfoVeiculo[]>([]);
   const [semHist, setSemHist] = useState(false);
+  const {historico, adicionarHistorico} = useHistorico();
 
   // Para a calculadora Financeira:
   const [taxaJuro, setTaxaJuro] = useState(1.49);
@@ -76,7 +77,7 @@ export default function Home() {
               : [...prev, carro].slice(0, 10)
           )
         }
-        className={`flex flex-col justify-center p-4 border rounded-lg shadow-sm bg-white hover:shadow-md transition cursor-pointer items-center ${
+        className={`flex flex-col justify-center p-4 border rounded-lg shadow-sm  bg-white hover:shadow-md transition cursor-pointer items-center ${
           selecionados.includes(carro) ? "ring-2 ring-blue-500" : ""
         }`}
       >
@@ -87,23 +88,6 @@ export default function Home() {
       </div>
     ));
   }
-
-  // Lógica de pegar os dados no LocalStorage
-  useEffect(() => {
-    const fetchHistorico = async () => {
-      try {
-        const armazenado = localStorage.getItem("historicoFipe");
-        if (armazenado) {
-          setHistVeiculos(JSON.parse(armazenado));
-          return;
-        }
-      } catch (error) {
-        setSemHist(true);
-      }
-    };
-
-    fetchHistorico();
-  }, []);
 
   // Logica para pegar o JSON dos carros mais vendidos
   // e usar a API para printar os dados na tela
@@ -176,11 +160,17 @@ export default function Home() {
   return (
     <div className="w-full max-w-6xl mx-auto mt-6 p-4 min-h-screen">
       {/* Texto inicial da aplicação */}
-      <p className="mb-6 text-gray-700 text-center md:text-left">
-        Bem-vindo à calculadora de financiamento! Aqui você pode selecionar
-        carros para simular parcelas, juros e valor total de financiamento. Você
-        pode selecionar um ou todos dos 10 carros mais vendidos ou os veúculos
-        que você consultou na página de Consulta.
+      <p className="mb-6 text-gray-700 text-center">
+        Bem-vindo à calculadora de financiamento! Selecione um ou mais carros
+        para simular parcelas, juros e valor total de financiamento. Abaixo
+        existe a tabela dos 10 carro mais vendidos no Brasil (de acordo com a
+        Fenabrave), e a tabela de historico de veiculos. Se a tabela de
+        historico estiver vazia, basta entrar na aba{" "}
+        <a href="/consulta" className="italic">
+          {" "}
+          Consulta{" "}
+        </a>
+        e fazer sua pesquisa.
       </p>
 
       {/* Calculadora e resultados*/}
@@ -263,16 +253,16 @@ export default function Home() {
       {/* Lógica de colocar os carros mais vendidos e o Historico de Veiculos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/*Historico de Carros */}
-        <div className="p-4 border rounded-lg shadow-sm bg-white">
+        <div className="p-4 border rounded-lg shadow-sm bg-white max-h-90 overflow-y-auto pr-2">
           <h2 className="text-lg font-semibold mb-4">
             {" "}
             Histórico de consultas de veículos:
           </h2>
           <div className="grid grid-cols-2 gap-4">
-            {histVeiculos.length === 0 ? (
+            {historico.length === 0 ? (
               <p className="text-gray-500">Nenhum histórico encontrado.</p>
             ) : (
-              histVeiculos.map((carro, index) => (
+              historico.map((carro, index) => (
                 <div
                   key={index}
                   onClick={() =>
@@ -299,7 +289,7 @@ export default function Home() {
         </div>
 
         {/*Carros mais vendidos */}
-        <div className="p-4 border rounded-lg shadow-sm bg-white">
+        <div className="p-4 border rounded-lg shadow-sm bg-white max-h-90 overflow-y-auto pr-2">
           <h2 className="text-lg font-semibold mb-4">Carros mais Vendidos</h2>
           <div
             className={` gap-4 ${

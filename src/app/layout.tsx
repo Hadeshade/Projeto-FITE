@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
 import Footer from "@/components/Footer";
+import { HistoricoProvider } from "@/contexts/HistoricoContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,8 +32,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Header />
+        <HistoricoProvider>{children}</HistoricoProvider>
         <Toaster position="top-center" richColors />
-        <main>{children}</main>
         <Footer />
       </body>
     </html>
